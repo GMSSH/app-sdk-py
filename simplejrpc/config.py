@@ -29,3 +29,7 @@ class Settings:
     def get_option(self, key: str) -> DefaultMapping:
         """ """
         return getattr(self.config, key)
+
+    def __getattr__(self, key: str) -> DefaultMapping:
+        """ """
+        return self.get_option(key)

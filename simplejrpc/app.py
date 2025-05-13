@@ -4,7 +4,7 @@ import inspect
 import os
 from functools import partial, wraps
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, Optional
 
 from jsonrpcserver import method
 from loguru import logger
@@ -14,7 +14,7 @@ from simplejrpc import exceptions
 from simplejrpc._sockets import JsonRpcServer
 from simplejrpc.config import Settings
 from simplejrpc.interfaces import RPCMiddleware
-from simplejrpc.parse import *
+from simplejrpc.parse import IniConfigParser, JsonConfigParser, YamlConfigParser
 from simplejrpc.response import raise_exception
 from simplejrpc.schemas import BaseForm
 
@@ -47,7 +47,9 @@ class ServerApplication:
             config_content = self.load_config(config_path)
         return self.config
 
-    def route(self, name: Optional[str] = None, form: Optional[Form] = BaseForm, fn=None):
+    def route(
+        self, name: Optional[str] = None, form: Optional[Form] = BaseForm, fn=None
+    ):
         """路由装饰器"""
         if fn is None:
             return partial(self.route, name, form)
@@ -91,19 +93,19 @@ class ServerApplication:
                 raise exceptions.ValueError("Unable to parse the configuration file")
         config_content: Dict[str, Any] = parser.read()
         self.config = Settings(config_content)
+        self.setup_logger(config_content)
         return config_content
 
-    def setup_logger(self, config_path: str):
+    def setup_logger(self, config_content: Dict[str, Any]):
         """ """
-        config_content = self.load_config(config_path)
-
         # NOTE:: logger必须携带且sink必须携带
-        if "sink" not in config_content.get_section("logger", {}):
-            raise exceptions.AttributeError("Not found logger sink config")
+        logger_config_items = config_content.get("logger", {})
+        if "sink" not in logger_config_items:
+            return
 
-        sink = config_content.logger.sink
+        sink = self.config.logger.sink
         os.makedirs(Path(sink).parent, exist_ok=True)
-        logger.add(**config_content.get_section("logger"))
+        logger.add(**logger_config_items)
 
     def clear_socket(self):
         """ """
