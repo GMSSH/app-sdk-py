@@ -8,6 +8,9 @@ from wtforms import Field, Form
 class BaseValidator:
     """ """
 
+    def __init__(self, err_message=None):
+        self.err_message = err_message
+
     def __call__(self, form: Form, field: Field):
         """ """
         return self.validator(form, field)

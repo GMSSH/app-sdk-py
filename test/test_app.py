@@ -9,7 +9,6 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from simplejrpc.app import ServerApplication
 from simplejrpc.config import DEFAULT_LOGGING_CONFIG
-from simplejrpc.exceptions import RPCException
 from simplejrpc.i18n import GI18n, Language, T
 from simplejrpc.interfaces import RPCMiddleware
 from simplejrpc.response import jsonify
@@ -20,7 +19,9 @@ from simplejrpc.schemas import BaseForm, StrRangeValidator, simple
 class TestForm(BaseForm):
     """ """
 
-    action = simple.StringField(validators=[StrRangeValidator(allows=["start", "stop"])])
+    action = simple.StringField(
+        validators=[StrRangeValidator(allows=["start", "stop"])]
+    )
 
 
 # Test-middleware

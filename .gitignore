@@ -9,7 +9,6 @@
 .eggs
 dist/
 AUTHORS
-ChangeLog
 /.pytest_cache
 flycheck_*
 *.vscode
@@ -23,7 +22,7 @@ build
 __pycache__/
 config.yml
 
-.pre-commit-config.yaml
+# .pre-commit-config.yaml
 .test
 
 *_cache_directory

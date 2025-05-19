@@ -7,7 +7,13 @@ from ast import literal_eval
 from typing import Any, Dict, List, Optional, Union
 
 from jsonrpcserver.async_main import dispatch_to_response
-from jsonrpcserver.response import Left, ResponseType, SuccessResponse, serialize_success, to_serializable
+from jsonrpcserver.response import (
+    Left,
+    ResponseType,
+    SuccessResponse,
+    serialize_success,
+    to_serializable,
+)
 from loguru import logger
 
 import simplejrpc.response as res
@@ -37,8 +43,8 @@ class JsonRpcServer:
             except Exception as _:
                 return res.res_failure(
                     code=http.HTTPStatus.INTERNAL_SERVER_ERROR.value,
-                    msg=_data,
-                    data=response._error.message,
+                    data=_data,
+                    msg=response._error.message,
                 )
         return _data
 
@@ -51,7 +57,9 @@ class JsonRpcServer:
             )
             return serialize_success(response)
         else:
-            return serialize_success(SuccessResponse(id=response.id, result=response._error.data))
+            return serialize_success(
+                SuccessResponse(id=response.id, result=response._error.data)
+            )
 
     def to_serializable(self, response: ResponseType):
         """ """
@@ -80,7 +88,9 @@ class JsonRpcServer:
             request_data = process_handle(request_data, context)
         return request_data
 
-    async def dispatch_to_response(self, *args, serializer=json.dumps, post_process=None, **kwargs):
+    async def dispatch_to_response(
+        self, *args, serializer=json.dumps, post_process=None, **kwargs
+    ):
         """ """
         request_data = args
         context = {
@@ -90,8 +100,12 @@ class JsonRpcServer:
             "kwargs": kwargs,
         }
         request_data = await self._process_request(request_data, context)
-        response = await dispatch_to_response(*args, post_process=post_process or self.to_serializable, **kwargs)
-        response = await self._process_request(response, context, handler="process_response", reverse=-1)
+        response = await dispatch_to_response(
+            *args, post_process=post_process or self.to_serializable, **kwargs
+        )
+        response = await self._process_request(
+            response, context, handler="process_response", reverse=-1
+        )
 
         return "" if response is None else serializer(response)
 
@@ -149,7 +163,11 @@ class JsonRpcServer:
 
     def _format_response(self, jsonrpc_response) -> bytes:
         """ """
-        response_body = json.dumps(jsonrpc_response)
+        response_body = (
+            json.dumps(jsonrpc_response)
+            if not isinstance(jsonrpc_response, str)
+            else jsonrpc_response
+        )
         headers = f"Content-Length: {len(response_body)}\r\n" "\r\n"
         return headers.encode() + response_body.encode()
 

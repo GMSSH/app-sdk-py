@@ -1,13 +1,14 @@
 # -*- encoding: utf-8 -*-
 import asyncio
 import json
-from typing import Any, AsyncGenerator, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
-from jsonrpcclient import parse, request
+from jsonrpcclient import request
 from jsonrpcclient.sentinels import NOID
 
 from simplejrpc.config import DEFAULT_GA_SOCKET
 from simplejrpc.interfaces import ClientTransport
+from simplejrpc.response import Response
 
 
 class UnixSocketTransport(ClientTransport):
@@ -19,7 +20,9 @@ class UnixSocketTransport(ClientTransport):
         self._socket_path = socket_path
 
     async def connect(self):
-        self.reader, self.writer = await asyncio.open_unix_connection(path=self._socket_path)
+        self.reader, self.writer = await asyncio.open_unix_connection(
+            path=self._socket_path
+        )
 
     async def make_header(self, message: str):
         """ """
@@ -58,7 +61,7 @@ class UnixSocketTransport(ClientTransport):
 
         # Read response body
         response_body = await self.reader.readexactly(content_length)
-        return json.loads(response_body)
+        return Response(json.loads(response_body))
 
     def close(self):
         if self.writer:

@@ -13,6 +13,7 @@ from wtforms import Form, ValidationError
 from simplejrpc import exceptions
 from simplejrpc._sockets import JsonRpcServer
 from simplejrpc.config import Settings
+from simplejrpc.i18n import T as i18n
 from simplejrpc.interfaces import RPCMiddleware
 from simplejrpc.parse import IniConfigParser, JsonConfigParser, YamlConfigParser
 from simplejrpc.response import raise_exception
@@ -26,11 +27,13 @@ class ServerApplication:
         self,
         socket_path: str,
         config: Optional[object] = Settings(),
-        config_path: Optional[str] = None,
+        config_path: Optional[str] = os.path.join(os.getcwd(), "config.yaml"),
+        i18n_dir: Optional[str] = os.path.join(os.getcwd(), "app", "i18n"),
     ):
         self.server = JsonRpcServer(socket_path)
         self.config_path = config_path
         self.config = config
+        i18n.set_path(i18n_dir)
         if self.config_path is not None:
             self.from_config(config_path=self.config_path)
 

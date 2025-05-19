@@ -62,9 +62,9 @@ class _T:
 
         i18n_file = os.path.join(cls.I18N_ROOT, f"{cls.LANG.value}.ini")
         t = cls.exists_t(i18n_file)
-        if value := not t.get(key):
-            raise ValueError("Not found language key")
-        return value
+        if value := t.get(key):
+            return value
+        raise ValueError("Not found language key")
 
     @classmethod
     def translate_ctx(cls, key, *value):
@@ -155,11 +155,15 @@ class CustomIniConfig(dict):
         # If the line is not empty
         if line.lstrip():
             # Find the second occurrence of a quote mark
-            quote_delimit = max(line.find("'", line.find("'") + 1), line.find('"', line.rfind('"')) + 1)
+            quote_delimit = max(
+                line.find("'", line.find("'") + 1), line.find('"', line.rfind('"')) + 1
+            )
             # Find the first comment mark after the second quote mark
             comment_delimit = line.find("#", quote_delimit)
             # Trim the line and split it into key and value
-            key, value = map(lambda x: x.strip().strip("'").strip('"'), line.split("=", 1))
+            key, value = map(
+                lambda x: x.strip().strip("'").strip('"'), line.split("=", 1)
+            )
             # Return a dictionary with the key and value
             return {key: value}
         else:
@@ -326,7 +330,9 @@ class T:
     @classmethod
     def translate_ctx_partial(cls, key: str, value: List[Any]):
         """Get formatted translation for the specified language"""
-        return functools.partial(cls._translate_ctx_partial, cls=cls, key=key, value=value)
+        return functools.partial(
+            cls._translate_ctx_partial, cls=cls, key=key, value=value
+        )
 
     @classmethod
     def _translate_load(cls, lang, file, ignore=False):
