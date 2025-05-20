@@ -4,6 +4,16 @@ Changelog
 Next Version
 ------------
 
+2.1.5rc1 (2025-05-20)
+------------------
+* Add: Run server in daemon
+
+
+2.1.5rc0 (2025-05-20)
+------------------
+* Add: Extends form valid method
+* Change: Deprecated schemas validators description
+
 2.0.4 (2025-05-13)
 ------------------
 * Fix: Write response format

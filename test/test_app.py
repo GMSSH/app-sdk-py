@@ -61,7 +61,9 @@ class TestApp(unittest.TestCase):
         """ """
         lang_path = os.path.join(current_path, "i18n")
         GI18n(lang_path, lang=Language.EN)
-        asyncio.run(app.run())
+        # app.run_daemon()
+        asyncio.run(app.run(daemon=True))
+        print("Server started")
 
     @unittest.skip
     def test_i18n(self):

@@ -2,7 +2,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    version="2.1.4",
+    version="2.1.5rc1",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown; charset=UTF-8",
     keywords=[
