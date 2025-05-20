@@ -210,6 +210,8 @@ class DaemonContext:
             stdout=None,
             stderr=None,
             signal_map=None,
+            fpidfile=None,
+
             ):
         """ Set up a new instance. """
         self.chroot_directory = chroot_directory
@@ -221,6 +223,7 @@ class DaemonContext:
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
+        self.fpidfile = fpidfile
 
         if uid is None:
             uid = os.getuid()
@@ -326,7 +329,7 @@ class DaemonContext:
         change_process_owner(self.uid, self.gid, self.initgroups)
 
         if self.detach_process:
-            detach_process_context()
+            detach_process_context(self.fpidfile)
 
         signal_handler_map = self._make_signal_handler_map()
         set_signal_handlers(signal_handler_map)
@@ -367,6 +370,9 @@ class DaemonContext:
             * Mark this instance as closed (for the purpose of future `open`
               and `close` calls).
             """
+
+        if self.fpidfile and os.path.exists(self.fpidfile):
+            os.remove(self.fpidfile)
         if not self.is_open:
             return
 
@@ -641,7 +647,7 @@ def prevent_core_dump():
     core_limit = (0, 0)
     resource.setrlimit(core_resource, core_limit)
 
-def detach_process_context():
+def detach_process_context(fpidfile=None):
     """ Detach the process context from parent and session.
 
         :return: ``None``.
@@ -675,6 +681,10 @@ def detach_process_context():
     fork_then_exit_parent(error_message="Failed first fork")
     os.setsid()
     fork_then_exit_parent(error_message="Failed second fork")
+    if fpidfile:
+        with open(fpidfile, 'w', encoding="utf-8") as f:
+            f.write(str(os.getpid()))
+
 
 def is_process_started_by_init():
     """ Determine whether the current process is started by `init`.

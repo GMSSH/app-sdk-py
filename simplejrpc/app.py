@@ -120,15 +120,19 @@ class ServerApplication:
         """中间件配置"""
         return self.server.middleware(middleware_instance)
 
-    def run_daemon(self):
+    def run_daemon(self, fpidfile):
         """ """
-        with DaemonContext():
+        with DaemonContext(fpidfile=fpidfile):
             asyncio.run(self.server.run())
 
-    async def run(self, daemon=False):
-        """ """
+    async def run(self, daemon=False, fpidfile=None):
+        """
+        :param daemon: 是否以守护进程方式运行
+        :param fpidfile: 守护进程pid文件
+        :return:
+        """
         atexit.register(self.clear_socket)
         if daemon:
-            self.run_daemon()
+            self.run_daemon(fpidfile)
         else:
             await self.server.run()
