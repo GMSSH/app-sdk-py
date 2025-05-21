@@ -4,6 +4,37 @@ Changelog
 Next Version
 ------------
 
+2.1.7 (2025-05-21)
+------------------
+* Fix:
+  - Built-in form uses the i18n "key" to verify abnormal issues with lang
+  - Fix the validation exception of the lang field in the "BaseForm"
+* Style: Format code
+* Feat: Add "app.route" overload annotation
+
+
+2.1.6rc0 (2025-05-20)
+------------------
+* Style: Format import style
+
+2.1.6 (2025-05-20)
+------------------
+* Add: Support passing PID files when starting daemon processes
+
+2.1.5rc2 (2025-05-20)
+------------------
+* Fix: Warnings deprecated bug
+
+2.1.5rc1 (2025-05-20)
+------------------
+* Add: Run server in daemon
+
+
+2.1.5rc0 (2025-05-20)
+------------------
+* Add: Extends form valid method
+* Change: Deprecated schemas validators description
+
 2.0.4 (2025-05-13)
 ------------------
 * Fix: Write response format
