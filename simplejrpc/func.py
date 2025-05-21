@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import inspect
-from typing import Any, List
+from collections import OrderedDict
+from typing import Any, Dict, List
 
 from simplejrpc.exceptions import TypeError
 
@@ -34,3 +35,25 @@ def str2int(value: str | int, name: str):
         raise TypeError(f"Field {name}, expected integer")
 
     return int(value)
+
+
+def order_dict(data: Dict[str, Any], field: str = "lang") -> OrderedDict:
+    """Extract the key value pairs corresponding to the fields and place them at the index position at the beginning of the ordered dictionary
+    1. Extract the key value pairs corresponding to the fields
+    2. Place the extracted key value pairs at the beginning of the ordered dictionary
+    3. Place the remaining key value pairs of the ordered dictionary after the ordered dictionary
+    4. Return an ordered dictionary
+
+    :param data: Sort dict data
+    :param field: Sort dict data by field
+    :return: OrderedDict
+    """
+
+    if field not in data:
+        return OrderedDict(data)
+    ordered_dict = OrderedDict()
+    ordered_dict[field] = data[field]
+    for key, value in data.items():
+        if key != field:
+            ordered_dict[key] = value
+    return ordered_dict

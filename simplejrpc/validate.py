@@ -3,11 +3,12 @@ import re
 from typing import Generic, NoReturn, Type, TypeVar, Union
 
 from simplejrpc import exceptions
+from simplejrpc._types import _BaseForm
+from simplejrpc._types import _NoValue as NoValue
 from simplejrpc.field import StringField
 from simplejrpc.form import Form
+from simplejrpc.i18n import Language
 from simplejrpc.i18n import T as i18n
-from simplejrpc.types import _BaseForm
-from simplejrpc.types import _NoValue as NoValue
 
 T = Type[Union[str, int, float, bool]]
 F = TypeVar("F", bound=_BaseForm)
@@ -208,8 +209,9 @@ class StringLangValidator(Validator):
     """ """
 
     def clean_data(self, instance):
-        if not bool(re.fullmatch(r"[a-zA-Z]{2}", self.value)):
-            tmp = f"Please enter a valid language code, such as 'en' or 'zh' :{self.label or self.name}"
+        values = Language.values()
+        if self.value not in values:
+            tmp = f"Please enter a valid language code, such as {values} :{self.label or self.name}"
             raise exceptions.ValidationError(tmp)
         i18n.set_lang(self.value)
 

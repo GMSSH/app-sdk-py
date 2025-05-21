@@ -622,7 +622,6 @@ def change_process_owner(uid, gid, initgroups=False):
                 "Unable to change process owner ({exc})".format(exc=exc))
         raise error from exc
 
-
 def prevent_core_dump():
     """ Prevent this process from generating a core dump.
 

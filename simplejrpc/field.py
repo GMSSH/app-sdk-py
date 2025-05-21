@@ -6,9 +6,9 @@ from typing import Generic, List, NoReturn, Type, TypeVar
 from typing_extensions import cast
 
 from simplejrpc import exceptions
+from simplejrpc._types import _NoValue as NoValue
+from simplejrpc._types import _Validator as Validator
 from simplejrpc.func import str2int
-from simplejrpc.types import _NoValue as NoValue
-from simplejrpc.types import _Validator as Validator
 
 T = TypeVar("T")
 

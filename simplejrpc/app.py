@@ -5,11 +5,12 @@ import inspect
 import os
 from functools import partial, wraps
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, NoReturn, Optional, Tuple, Union, cast, overload
 
 from jsonrpcserver import method
 from loguru import logger
-from wtforms import Form, ValidationError
+from wtforms import Form as _Form
+from wtforms import ValidationError
 
 from simplejrpc import exceptions
 from simplejrpc._sockets import JsonRpcServer
@@ -19,7 +20,8 @@ from simplejrpc.i18n import T as i18n
 from simplejrpc.interfaces import RPCMiddleware
 from simplejrpc.parse import IniConfigParser, JsonConfigParser, YamlConfigParser
 from simplejrpc.response import raise_exception
-from simplejrpc.schemas import BaseForm
+from simplejrpc.schemas import BaseForm as _BaseForm
+from simplejrpc.validate import BaseForm, Form
 
 
 class ServerApplication:
@@ -36,14 +38,14 @@ class ServerApplication:
         self.config_path = config_path
         self.config = config
         i18n.set_path(i18n_dir)
-        if self.config_path is not None:
+        if self.config_path is not None and os.path.exists(self.config_path):
             self.from_config(config_path=self.config_path)
 
     def from_config(
         self,
         config_content: Optional[Dict[str, Any]] = None,
         config_path: Optional[str] = None,
-    ):
+    ) -> Settings:
         """ """
         if config_content:
             self.config = Settings(config_content)
@@ -52,9 +54,28 @@ class ServerApplication:
             config_content = self.load_config(config_path)
         return self.config
 
+    @overload
     def route(
-        self, name: Optional[str] = None, form: Optional[Form] = BaseForm, fn=None
-    ):
+        self,
+        name: Optional[str] = None,
+        form: Optional[_Form] = _BaseForm,
+        fn: Callable[[Union[Tuple, Dict[str, Any]]], Any] = None,
+    ) -> Callable[[Union[Tuple, Dict[str, Any]]], Any]: ...
+
+    @overload
+    def route(
+        self,
+        name: Optional[str] = None,
+        form: Optional[Form] = BaseForm,
+        fn: Callable[[Union[Tuple, Dict[str, Any]]], Any] = None,
+    ) -> Callable[[Union[Tuple, Dict[str, Any]]], Any]: ...
+
+    def route(
+        self,
+        name: Optional[str] = None,
+        form: Optional[Union[Form, _Form]] = BaseForm,
+        fn=None,
+    ) -> Callable[[Union[Tuple, Dict[str, Any]]], Any]:
         """路由装饰器"""
         if fn is None:
             return partial(self.route, name, form)
@@ -66,17 +87,22 @@ class ServerApplication:
                 params = dict(zip(inspect.getfullargspec(fn).args, args))
                 params.update(kwargs)
                 form_validate = form(**params)
-                if not form_validate.validate():
-                    for _, errors in form_validate.errors.items():
-                        for error in errors:
-                            raise_exception(ValidationError, msg=error)
+                if isinstance(form_validate, _Form):
+                    form_validate = cast(_Form, form_validate)
+                    if not form_validate.validate():
+                        for _, errors in form_validate.errors.items():
+                            for error in errors:
+                                raise_exception(ValidationError, msg=error)
+                else:
+                    form_validate = cast(Form, form_validate)
+                    form_validate.raise_all_errors()
 
             return fn(*args, **kwargs)
 
         method(wrapper, name=name or fn.__name__)
         return wrapper
 
-    def load_config(self, config_path: str):
+    def load_config(self, config_path: str) -> Dict[str, Any]:
         """ """
 
         if not os.path.exists(config_path):
@@ -120,15 +146,15 @@ class ServerApplication:
         """中间件配置"""
         return self.server.middleware(middleware_instance)
 
-    def run_daemon(self, fpidfile):
-        """ """
+    def run_daemon(self, fpidfile: Path) -> NoReturn:
+        """Start service in daemon mode"""
         with DaemonContext(fpidfile=fpidfile):
             asyncio.run(self.server.run())
 
-    async def run(self, daemon=False, fpidfile=None):
+    async def run(self, daemon: bool = False, fpidfile: Path = None) -> NoReturn:
         """
-        :param daemon: 是否以守护进程方式运行
-        :param fpidfile: 守护进程pid文件
+        :param daemon: Whether to run as a daemon process
+        :param fpidfile: Guardian process PID file
         :return:
         """
         atexit.register(self.clear_socket)

@@ -79,7 +79,7 @@ class IntLimitValidator(BaseValidator):
 
 # 当前对象在2.2.0版本遗弃
 @deprecated(
-    "This class is deprecated at 2.2.0 version. Use the form.BaseForm class instead.",
+    "This class is deprecated at 2.2.0 version. Use the validate.BaseForm class instead.",
     category=DeprecationWarning,
 )
 class BaseForm(Form):
